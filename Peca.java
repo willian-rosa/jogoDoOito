@@ -23,5 +23,16 @@ public class Peca {
 		this.botao = botao;
 	}
 	
+	@Override
+	public String toString() {
+		return this.numeroPeca+"";
+	}
+	
+	public Peca clone() {
+		Peca novaPeca = new Peca();
+		novaPeca.setBotao(this.botao);
+		novaPeca.setNumeroPeca(this.numeroPeca);
+		return novaPeca;
+	}
 
 }

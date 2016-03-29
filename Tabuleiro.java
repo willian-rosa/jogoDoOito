@@ -1,98 +1,102 @@
 package jogoDoOito;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Shell;
 
 public class Tabuleiro {
 
-	private final int margem = 10;
-	private final int tamanhoBotao = 25;
+	private Tabuleiro tabuleiroPai;
+	private ArrayList<Tabuleiro> tabuleiroFilhos = new ArrayList<Tabuleiro>();
 	
-	private ArrayList<Peca> estadoAtual = new ArrayList<Peca>();
+	private Peca[][] pecas = new Peca[3][3];
 	
-	private int[] objetivo = {1,2,3,4,5,6,7,8,0}; 
 	
-	public Tabuleiro(Shell shell) {
-		this.gerarTabuleiro(shell);
-		
-	}
-	
-	private void gerarTabuleiro(Shell shell) {
-		
-		List<Integer> numerosPecas = this.gerarNumeroPecasRandomicos();
-		
-		for (int i = 0; i < numerosPecas.size(); i++) {
-			Peca peca = this.gerarPecas(shell, numerosPecas.get(i), i);
-			
-			estadoAtual.add(peca);
-			
-		}
-		
-	}
-	
-	private List<Integer> gerarNumeroPecasRandomicos() {
-		List<Integer> numeroPecas = new ArrayList<Integer>();
-		
-		for (int i = 0; i < 9; i++){
-			numeroPecas.add(i);
-		}
-		Collections.shuffle(numeroPecas);
-		
-		return numeroPecas;
-		
-	}
-	
-	private int gerarWidthPeca(int index){
-		
-		int mod = index % 3;
-		
-		int width = (mod*this.tamanhoBotao)+(this.margem*mod)+this.margem;
-		
-		return width;
-		
-	}
-	
-	private int gerarHeightPeca(int index){
 
-		int coord = (int)index/3; 
-
-		int height = (coord*this.tamanhoBotao)+(this.margem*coord)+this.margem;
-		
-		return height;
-		
+	public Peca[][] getPecas() {
+		return pecas;
 	}
 	
-	private Peca gerarPecas(Shell shell, Integer labelButton, int index) {
+	public Peca[][] clonePecas() {
 		
-		Button btnPeca = new Button(shell, SWT.NONE);
-		btnPeca.setBounds(gerarWidthPeca(index), gerarHeightPeca(index), tamanhoBotao, tamanhoBotao);
-		btnPeca.setText(labelButton+"");
+		Peca[][] novaPecas = new Peca[3][3];
 		
-		Peca peca = new Peca();
-		peca.setBotao(btnPeca);
-		
-		return peca;
-		
-	}
-	
-	private int heuristicaQuantidadePecaLugarCerto(ArrayList<Peca> pecas){
-		
-		int qtdLugarCeto = 0;
-		
-		for (int i = 0; i < this.objetivo.length; i++) {
-			if(pecas.get(i).getNumeroPeca() == objetivo[i]){
-				qtdLugarCeto++;
+		for (int x = 0; x < pecas.length; x++) {
+			for (int y = 0; y < pecas[x].length; y++) {
+				novaPecas[x][y] = (this.pecas[x][y] == null)?null:this.pecas[x][y].clone();  
 			}
 		}
 		
-		return qtdLugarCeto;
+		return novaPecas;
 		
 	}
+
+	public void setPecas(Peca[][] pecas) {
+		this.pecas = pecas;
+	}
 	
+	public void populatePecasByListInteger(List<Integer> numerosPecas){
+		
+		int k = 0;
+		for (int i = 0; i < pecas.length; i++) {
+			for (int j = 0; j < pecas[i].length; j++) {
+				if(numerosPecas.get(k) != 0){
+					Peca peca = new Peca();
+					peca.setNumeroPeca(numerosPecas.get(k));
+					this.pecas[j][i] = peca;
+				}
+				k++;
+			}
+		}
+	}
+	
+	public int[] getPosicaoEspacoBranco(){
+		
+		int[] posicao = {0,0};
+		
+		for (int x = 0; x < pecas.length; x++) {
+			for (int y = 0; y < pecas[x].length; y++) {
+				if(this.pecas[x][y] == null){
+					posicao[0] = x;
+					posicao[1] = y;
+					
+					return posicao;
+				}
+			}
+		}
+		return posicao;
+	}
+	
+	public Tabuleiro getTabuleiroPai() {
+		return tabuleiroPai;
+	}
+
+	public void setTabuleiroPai(Tabuleiro tabuleiroPai) {
+		this.tabuleiroPai = tabuleiroPai;
+	}
+
+	public ArrayList<Tabuleiro> getTabuleiroFilhos() {
+		return tabuleiroFilhos;
+	}
+
+	public void setTabuleiroFilhos(ArrayList<Tabuleiro> tabuleiroFilhos) {
+		this.tabuleiroFilhos = tabuleiroFilhos;
+	}
+	
+	@Override
+	public String toString() {
+		
+		String tabuleiro = "";
+		
+		for (int x = 0; x < pecas.length; x++) {
+			for (int y = 0; y < pecas[x].length; y++) {
+				tabuleiro+= this.pecas[x][y]+" ";
+			}
+			
+			tabuleiro+="\n";
+			
+		}
+		
+		return tabuleiro;
+	}
 	
 }

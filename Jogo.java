@@ -18,7 +18,7 @@ public class Jogo {
 		shell.setSize(450, 300);
 		shell.setText("Jogo do Oito");
 		
-		Tabuleiro tabuleiro = new Tabuleiro(shell);
+		ArvoreTabuleiros tabuleiro = new ArvoreTabuleiros(shell);
 		
 		
 		
