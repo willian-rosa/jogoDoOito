@@ -13,21 +13,35 @@ public class ArvoreTabuleiros {
 	private Tabuleiro raiz;
 	private Tabuleiro ponteiro;
 	
-	
 	private final int margem = 10;
 
 	private final int tamanhoBotao = 25;
 	
-	private ArrayList<Peca> estadoAtual = new ArrayList<Peca>();
-	
-	private int[] objetivo = {1,2,3,4,5,6,7,8,0}; 
+	private Tabuleiro  objetivo = new Tabuleiro(); 
 	
 	public ArvoreTabuleiros(Shell shell) {
 		
-		this.gerarTabuleiroRaiz();
-		System.out.println(this.raiz);
+		this.gerarObjetivo();
 		
-		this.gerarTabuleirosPossivel();
+		this.gerarTabuleiroRaiz();
+		
+		this.gerarTabuleirosPossivel(this.ponteiro);
+		
+		int i = 0;
+		
+		while (i < 100 && this.isJogoFinalizado() == false) {
+			
+			System.out.println("\n\n Pontos: "+this.ponteiro.getQuantidadePontos());
+			System.out.println(this.ponteiro);
+			
+			Tabuleiro tabuleiroMaior = heuristicaGetTabuleiroMelhor(this.ponteiro);
+			
+			this.ponteiro = tabuleiroMaior;
+			
+			this.gerarTabuleirosPossivel(this.ponteiro);
+			
+			i++;
+		}
 		
 		
 	}
@@ -45,7 +59,28 @@ public class ArvoreTabuleiros {
 		
 		
 	}
+	
 			
+	private void gerarObjetivo() {
+		
+		//TODO o populatePecasByListInteger esta errado
+		
+		List<Integer> numerosPecas = new ArrayList<Integer>();
+		
+		for (int i = 1; i < 9; i++){
+			numerosPecas.add(i);
+		}
+		
+		numerosPecas.add(0);
+		
+		Tabuleiro tabuleiro =  new Tabuleiro();
+		
+		tabuleiro.populatePecasByListInteger(numerosPecas);
+		
+		this.objetivo = tabuleiro;
+		
+	}
+	
 	private Tabuleiro gerarTabuleiroPossivel(int[] posicaoEspacoBranco, int[] posicao) {
 		
 		if(posicao[0] >= 0 && posicao[0] <= 2 && posicao[1] >= 0 && posicao[1] <= 2){
@@ -69,34 +104,40 @@ public class ArvoreTabuleiros {
 		
 	}
 	
-	private void gerarTabuleirosPossivel() {
+	private void gerarTabuleirosPossivel(Tabuleiro tabuleiroAtual) {
 		
-		int[] posicaoEspacoBranco = this.raiz.getPosicaoEspacoBranco();
+		int[] posicaoEspacoBranco = tabuleiroAtual.getPosicaoEspacoBranco();
 		
 		int[][] novasPosicoes = new int[4][2];
 		
-		
-		//Movimentos
+		//Movimentos do jogo
 		novasPosicoes[0] = this.gerarOperadorMovimentoParaCima(posicaoEspacoBranco);
 		novasPosicoes[1] = this.gerarOperadorMovimentoParaBaixo(posicaoEspacoBranco);
 		novasPosicoes[2] = this.gerarOperadorMovimentoParaEsquerda(posicaoEspacoBranco);
 		novasPosicoes[3] = this.gerarOperadorMovimentoParaDireita(posicaoEspacoBranco);
 		
 		
-		
+		//Gera jogas possiveis do objeto atual, com os movimentos permitidos
 		for (int i = 0; i < novasPosicoes.length; i++) {
 			
-			System.out.println("novo "+novasPosicoes[i][0]+" "+novasPosicoes[i][1]);
 			Tabuleiro novoTabuleiro = this.gerarTabuleiroPossivel(posicaoEspacoBranco, novasPosicoes[i]);
+						
 			if(novoTabuleiro != null){
-					System.out.println(novoTabuleiro);
+				
+				novoTabuleiro.setTabuleiroPai(tabuleiroAtual);
+				
+				if(!this.heuristicaComparaTabuleirosAnteriores(novoTabuleiro)){
+					
+					this.heuristicaQuantidadePecaLugarCerto(novoTabuleiro);
+					
+					tabuleiroAtual.addTabuleiroFilho(novoTabuleiro);
+					
+				}
 			}
-			
 		}
-		
-		
-		
 	}
+	
+	
 	
 	private int[] gerarOperadorMovimentoParaCima(int[] posicao){
 		int[] novaPosicao = posicao.clone();
@@ -167,17 +208,10 @@ public class ArvoreTabuleiros {
 		
 	}
 	
-	private int heuristicaQuantidadePecaLugarCerto(ArrayList<Peca> pecas){
+	
+	private boolean isJogoFinalizado(){
 		
-		int qtdLugarCeto = 0;
-		
-		for (int i = 0; i < this.objetivo.length; i++) {
-			if(pecas.get(i).getNumeroPeca() == objetivo[i]){
-				qtdLugarCeto++;
-			}
-		}
-		
-		return qtdLugarCeto;
+		return this.ponteiro.getQuantidadePontos() == 9;
 		
 	}
 	
@@ -195,6 +229,91 @@ public class ArvoreTabuleiros {
 
 	public void setPonteiro(Tabuleiro ponteiro) {
 		this.ponteiro = ponteiro;
+	}
+	
+	//IA
+	
+	private boolean heuristicaComparaTabuleirosAnteriores(Tabuleiro tabuleiro){
+		
+		boolean iguais = false;
+		
+		Tabuleiro tabuleiroPai = tabuleiro.getTabuleiroPai();
+		
+		while(tabuleiroPai != null && iguais == false){
+			
+			tabuleiroPai = tabuleiroPai.getTabuleiroPai();
+			
+			iguais = heuristicaComparaTabuleirosSaoIguais(tabuleiro, tabuleiroPai);
+			
+		}
+		
+		
+		return iguais;
+		
+	}
+	private boolean heuristicaComparaTabuleirosSaoIguais(Tabuleiro tabuleiro1, Tabuleiro tabuleiro2){
+		
+		int pecasNaMesmaPosicao = 0;
+		
+		if(tabuleiro1 != null && tabuleiro2 != null){
+			
+			Peca[][] pecasTabuleiro1 =	tabuleiro1.getPecas();
+			Peca[][] pecasTabuleiro2= 	tabuleiro2.getPecas();
+			
+			for (int x = 0; x < pecasTabuleiro1.length; x++) {
+				for (int y = 0; y < pecasTabuleiro1[x].length; y++) {
+					
+					Peca peca1 = pecasTabuleiro1[x][y];
+					Peca peca2 = pecasTabuleiro2[x][y];
+					if(peca1 == null && peca2 == null){
+						pecasNaMesmaPosicao++;
+					}else if(peca1 != null && peca2 != null && peca1.getNumeroPeca() == peca2.getNumeroPeca()){
+						pecasNaMesmaPosicao++;
+					}
+				}
+			}
+		}
+
+		return pecasNaMesmaPosicao == 9;
+		
+	}
+	
+	private void heuristicaQuantidadePecaLugarCerto(Tabuleiro tabuleiro){
+		
+		int quantidadePontos = 0;
+		
+		Peca[][] pecasTabuleiro = tabuleiro.getPecas();
+		Peca[][] pecasObjetivo = this.objetivo.getPecas();
+		
+		for (int x = 0; x < pecasTabuleiro.length; x++) {
+			for (int y = 0; y < pecasTabuleiro[x].length; y++) {
+				
+				Peca pecaTabuleiro = pecasTabuleiro[x][y];
+				Peca pecaObjetivo = pecasObjetivo[x][y];
+				if(pecaTabuleiro == null && pecaObjetivo == null){
+					quantidadePontos++;
+				}else if(pecaTabuleiro != null && pecaObjetivo != null && pecaTabuleiro.getNumeroPeca() == pecaObjetivo.getNumeroPeca()){
+					quantidadePontos++;
+				}
+			}
+		}
+
+		tabuleiro.setQuantidadePontos(quantidadePontos);
+		
+	}
+	
+	private Tabuleiro heuristicaGetTabuleiroMelhor(Tabuleiro tabuleiro){
+		
+		Tabuleiro tabuleiroMelhor = new Tabuleiro();
+		
+		for (Tabuleiro tabuleiroFilho : tabuleiro.getTabuleiroFilhos()) {
+			if(tabuleiroFilho.getQuantidadePontos() > tabuleiroMelhor.getQuantidadePontos()){
+				tabuleiroMelhor = tabuleiroFilho;
+			}
+		}
+		
+		return tabuleiroMelhor;
+		
 	}
 	
 }

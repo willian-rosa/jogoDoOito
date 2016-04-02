@@ -10,7 +10,15 @@ public class Tabuleiro {
 	
 	private Peca[][] pecas = new Peca[3][3];
 	
-	
+	private int quantidadePontos = -1;
+
+	public int getQuantidadePontos() {
+		return quantidadePontos;
+	}
+
+	public void setQuantidadePontos(int quantidadePontos) {
+		this.quantidadePontos = quantidadePontos;
+	}
 
 	public Peca[][] getPecas() {
 		return pecas;
@@ -74,6 +82,11 @@ public class Tabuleiro {
 		this.tabuleiroPai = tabuleiroPai;
 	}
 
+	public void addTabuleiroFilho(Tabuleiro tabuleiro) {
+		tabuleiro.setTabuleiroPai(this);
+		this.tabuleiroFilhos.add(tabuleiro);
+	}
+	
 	public ArrayList<Tabuleiro> getTabuleiroFilhos() {
 		return tabuleiroFilhos;
 	}
