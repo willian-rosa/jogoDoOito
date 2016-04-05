@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.swt.widgets.Button;
-
 public class ArvoreTabuleiros {
 
 	private Tabuleiro raiz;
@@ -13,7 +11,11 @@ public class ArvoreTabuleiros {
 	
 	private Tabuleiro  objetivo = new Tabuleiro(); 
 	
-	public ArvoreTabuleiros(ArrayList<Button> botoes) {
+	public static void main(String[] args) {
+		new ArvoreTabuleiros();
+	}
+	
+	public ArvoreTabuleiros() {
 		
 		this.gerarObjetivo();  
 		
@@ -27,16 +29,11 @@ public class ArvoreTabuleiros {
 		int i = 0;
 		
 		while (this.isJogoFinalizado() == false) {
-//			try {
-//				Thread.sleep(1000);
-//			} catch (Exception e) {
-//			}
 			
 			if(this.ponteiro.getTabuleiroFilhos().size() == 0){
 				this.ponteiro = this.heuristicaGetParenteMelhor(this.ponteiro.getTabuleiroPai());
 			}else{
 				this.ponteiro = heuristicaGetTabuleiroMelhor(this.ponteiro);
-//				this.atualizaView(this.ponteiro, botoes);
 			}
 			
 			this.gerarTabuleirosPossivel(this.ponteiro);
@@ -223,21 +220,6 @@ public class ArvoreTabuleiros {
 		this.ponteiro = ponteiro;
 	}
 	
-	private void atualizaView(Tabuleiro tabuleiro, ArrayList<Button> botoes) {
-
-		Peca[][] pecasTabuleiro = tabuleiro.getPecas();
-		
-		int i = 0;
-		
-		for (int x = 0; x < pecasTabuleiro.length; x++) {
-			for (int y = 0; y < pecasTabuleiro[x].length; y++) {
-				botoes.get(i).setText(""+((pecasTabuleiro[x][y]==null)?0:pecasTabuleiro[x][y].getNumeroPeca()));
-				i++;
-				
-			}
-		}
-	}
-	
 	//IA
 	
 	private boolean heuristicaComparaTabuleirosAnteriores(Tabuleiro tabuleiro){
@@ -329,15 +311,7 @@ public class ArvoreTabuleiros {
 	}
 
 	private Tabuleiro heuristicaGetTabuleiroMelhor(Tabuleiro tabuleiro){
-		try {
-			return tabuleiro.getTabuleiroFilhos().get(0);
-		} catch (Exception e) {
-			System.out.println("Erro:\n" + tabuleiro);
-			System.out.println("filhos: " + tabuleiro.getTabuleiroFilhos().size());
-			System.exit(0);
-		}
-		return null;
-		
+		return tabuleiro.getTabuleiroFilhos().get(0);
 	}
 	private Tabuleiro heuristicaGetParenteMelhor(Tabuleiro tabuleiroPai){
 		
