@@ -10,7 +10,9 @@ public class Tabuleiro {
 	
 	private Peca[][] pecas = new Peca[3][3];
 	
-	private int quantidadePontos = -1;
+	private int quantidadePontos	= -1;
+
+	private int indexFilhoAtual		= 0;
 
 	public int getQuantidadePontos() {
 		return quantidadePontos;
@@ -110,6 +112,18 @@ public class Tabuleiro {
 		}
 		
 		return tabuleiro;
+	}
+
+	public int getIndexFilhoAtual() {
+		return indexFilhoAtual;
+	}
+	
+	public void incIndexFilhoAtual() {
+		this.indexFilhoAtual++;
+	}
+
+	public void setIndexFilhoAtual(int indexFilhoAtual) {
+		this.indexFilhoAtual = indexFilhoAtual;
 	}
 	
 }

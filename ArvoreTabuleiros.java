@@ -21,19 +21,25 @@ public class ArvoreTabuleiros {
 	
 	public ArvoreTabuleiros(Shell shell) {
 		
-		this.gerarObjetivo();
+		this.gerarObjetivo();  
 		
 		this.gerarTabuleiroRaiz();
+		
+		System.out.println("Inicio");
+		System.out.println(this.raiz);
 		
 		this.gerarTabuleirosPossivel(this.ponteiro);
 		
 		int i = 0;
 		
-		while (i < 100 && this.isJogoFinalizado() == false) {
+		while (this.isJogoFinalizado() == false) {
 			
-			System.out.println("\n\n Pontos: "+this.ponteiro.getQuantidadePontos());
-			System.out.println(this.ponteiro);
+			if(this.ponteiro.getTabuleiroFilhos().size() == 0){
+				this.ponteiro = this.heuristicaGetParenteMelhor(this.ponteiro.getTabuleiroPai());
+				this.gerarTabuleirosPossivel(this.ponteiro);
+			}
 			
+			ordenaTabuleiroFilhosBubbleSortMelhorPontuacao(this.ponteiro);
 			Tabuleiro tabuleiroMaior = heuristicaGetTabuleiroMelhor(this.ponteiro);
 			
 			this.ponteiro = tabuleiroMaior;
@@ -42,6 +48,9 @@ public class ArvoreTabuleiros {
 			
 			i++;
 		}
+		
+		System.out.println("\n\n Pontos: "+this.ponteiro.getQuantidadePontos()+": Jogadas: "+i);
+		System.out.println(this.ponteiro);
 		
 		
 	}
@@ -93,7 +102,13 @@ public class ArvoreTabuleiros {
 			
 			Peca[][] pecas = novoTabuleiro.getPecas();
 			
-			pecas[posicaoEspacoBranco[0]][posicaoEspacoBranco[1]] = pecas[posicao[0]][posicao[1]].clone();
+			try {
+				pecas[posicaoEspacoBranco[0]][posicaoEspacoBranco[1]] = pecas[posicao[0]][posicao[1]].clone();
+			} catch (Exception e) {
+				System.out.println("Tabuleiro atual sem peças");
+				
+				System.exit(0);
+			}
 			pecas[posicao[0]][posicao[1]] = null;
 			
 			
@@ -302,18 +317,44 @@ public class ArvoreTabuleiros {
 		
 	}
 	
-	private Tabuleiro heuristicaGetTabuleiroMelhor(Tabuleiro tabuleiro){
+	private void ordenaTabuleiroFilhosBubbleSortMelhorPontuacao(Tabuleiro tabuleiro){
 		
-		Tabuleiro tabuleiroMelhor = new Tabuleiro();
+		int qtdFilhos = tabuleiro.getTabuleiroFilhos().size();
+		ArrayList<Tabuleiro> tabuleirosFilhos = tabuleiro.getTabuleiroFilhos();
 		
-		for (Tabuleiro tabuleiroFilho : tabuleiro.getTabuleiroFilhos()) {
-			if(tabuleiroFilho.getQuantidadePontos() > tabuleiroMelhor.getQuantidadePontos()){
-				tabuleiroMelhor = tabuleiroFilho;
+		for (int i = 0; i < qtdFilhos-1; i++) {
+			for (int j = 1; j < qtdFilhos-i; j++) {
+				if(tabuleirosFilhos.get(j-1).getQuantidadePontos() < tabuleirosFilhos.get(j).getQuantidadePontos()){
+					Tabuleiro tabuleiroTemp = tabuleirosFilhos.get(j-1);
+
+					tabuleirosFilhos.set(j-1, tabuleirosFilhos.get(j));
+					tabuleirosFilhos.set(j, tabuleiroTemp);
+					
+				}
 			}
 		}
 		
-		return tabuleiroMelhor;
+	}
+
+	private Tabuleiro heuristicaGetTabuleiroMelhor(Tabuleiro tabuleiro){
+		
+		return tabuleiro.getTabuleiroFilhos().get(0);
 		
 	}
+	private Tabuleiro heuristicaGetParenteMelhor(Tabuleiro tabuleiroPai){
+		
+		ArrayList<Tabuleiro> tabuleiros = tabuleiroPai.getTabuleiroFilhos();
+		
+		tabuleiroPai.incIndexFilhoAtual();
+
+		if(tabuleiros.size()<=tabuleiroPai.getIndexFilhoAtual()){
+			heuristicaGetParenteMelhor(tabuleiroPai.getTabuleiroPai());
+		}
+		
+		return tabuleiros.get(tabuleiroPai.getIndexFilhoAtual());
+		
+	}
+	
+	
 	
 }
