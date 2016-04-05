@@ -4,22 +4,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Shell;
 
 public class ArvoreTabuleiros {
 
 	private Tabuleiro raiz;
 	private Tabuleiro ponteiro;
 	
-	private final int margem = 10;
-
-	private final int tamanhoBotao = 25;
-	
 	private Tabuleiro  objetivo = new Tabuleiro(); 
 	
-	public ArvoreTabuleiros(Shell shell) {
+	public ArvoreTabuleiros(ArrayList<Button> botoes) {
 		
 		this.gerarObjetivo();  
 		
@@ -33,20 +27,24 @@ public class ArvoreTabuleiros {
 		int i = 0;
 		
 		while (this.isJogoFinalizado() == false) {
+//			try {
+//				Thread.sleep(1000);
+//			} catch (Exception e) {
+//			}
 			
 			if(this.ponteiro.getTabuleiroFilhos().size() == 0){
 				this.ponteiro = this.heuristicaGetParenteMelhor(this.ponteiro.getTabuleiroPai());
-				this.gerarTabuleirosPossivel(this.ponteiro);
+			}else{
+				this.ponteiro = heuristicaGetTabuleiroMelhor(this.ponteiro);
+//				this.atualizaView(this.ponteiro, botoes);
 			}
-			
-			ordenaTabuleiroFilhosBubbleSortMelhorPontuacao(this.ponteiro);
-			Tabuleiro tabuleiroMaior = heuristicaGetTabuleiroMelhor(this.ponteiro);
-			
-			this.ponteiro = tabuleiroMaior;
 			
 			this.gerarTabuleirosPossivel(this.ponteiro);
 			
 			i++;
+			
+			System.out.println(i);
+			
 		}
 		
 		System.out.println("\n\n Pontos: "+this.ponteiro.getQuantidadePontos()+": Jogadas: "+i);
@@ -150,6 +148,9 @@ public class ArvoreTabuleiros {
 				}
 			}
 		}
+		
+		ordenaTabuleiroFilhosBubbleSortMelhorPontuacao(tabuleiroAtual);
+		
 	}
 	
 	
@@ -186,43 +187,19 @@ public class ArvoreTabuleiros {
 		}
 		Collections.shuffle(numeroPecas);
 		
+//		numeroPecas.add(6);
+//		numeroPecas.add(3);
+//		numeroPecas.add(5);
+//		numeroPecas.add(0);
+//		numeroPecas.add(2);
+//		numeroPecas.add(8);
+//		numeroPecas.add(1);
+//		numeroPecas.add(7);
+//		numeroPecas.add(4);
+		
 		return numeroPecas;
 		
 	}
-	
-	private int gerarWidthPeca(int index){
-		
-		int mod = index % 3;
-		
-		int width = (mod*this.tamanhoBotao)+(this.margem*mod)+this.margem;
-		
-		return width;
-		
-	}
-	
-	private int gerarHeightPeca(int index){
-
-		int coord = (int)index/3; 
-
-		int height = (coord*this.tamanhoBotao)+(this.margem*coord)+this.margem;
-		
-		return height;
-		
-	}
-	
-	private Peca gerarPecas(Shell shell, Integer labelButton, int index) {
-		
-		Button btnPeca = new Button(shell, SWT.NONE);
-		btnPeca.setBounds(gerarWidthPeca(index), gerarHeightPeca(index), tamanhoBotao, tamanhoBotao);
-		btnPeca.setText(labelButton+"");
-		
-		Peca peca = new Peca();
-		peca.setBotao(btnPeca);
-		
-		return peca;
-		
-	}
-	
 	
 	private boolean isJogoFinalizado(){
 		
@@ -244,6 +221,21 @@ public class ArvoreTabuleiros {
 
 	public void setPonteiro(Tabuleiro ponteiro) {
 		this.ponteiro = ponteiro;
+	}
+	
+	private void atualizaView(Tabuleiro tabuleiro, ArrayList<Button> botoes) {
+
+		Peca[][] pecasTabuleiro = tabuleiro.getPecas();
+		
+		int i = 0;
+		
+		for (int x = 0; x < pecasTabuleiro.length; x++) {
+			for (int y = 0; y < pecasTabuleiro[x].length; y++) {
+				botoes.get(i).setText(""+((pecasTabuleiro[x][y]==null)?0:pecasTabuleiro[x][y].getNumeroPeca()));
+				i++;
+				
+			}
+		}
 	}
 	
 	//IA
@@ -337,8 +329,14 @@ public class ArvoreTabuleiros {
 	}
 
 	private Tabuleiro heuristicaGetTabuleiroMelhor(Tabuleiro tabuleiro){
-		
-		return tabuleiro.getTabuleiroFilhos().get(0);
+		try {
+			return tabuleiro.getTabuleiroFilhos().get(0);
+		} catch (Exception e) {
+			System.out.println("Erro:\n" + tabuleiro);
+			System.out.println("filhos: " + tabuleiro.getTabuleiroFilhos().size());
+			System.exit(0);
+		}
+		return null;
 		
 	}
 	private Tabuleiro heuristicaGetParenteMelhor(Tabuleiro tabuleiroPai){
@@ -346,9 +344,11 @@ public class ArvoreTabuleiros {
 		ArrayList<Tabuleiro> tabuleiros = tabuleiroPai.getTabuleiroFilhos();
 		
 		tabuleiroPai.incIndexFilhoAtual();
+		
+		int indexAtual = tabuleiroPai.getIndexFilhoAtual();
 
-		if(tabuleiros.size()<=tabuleiroPai.getIndexFilhoAtual()){
-			heuristicaGetParenteMelhor(tabuleiroPai.getTabuleiroPai());
+		if(tabuleiros.size()<=indexAtual){
+			return heuristicaGetParenteMelhor(tabuleiroPai.getTabuleiroPai());
 		}
 		
 		return tabuleiros.get(tabuleiroPai.getIndexFilhoAtual());
