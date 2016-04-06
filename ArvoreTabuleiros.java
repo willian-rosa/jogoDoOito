@@ -30,17 +30,17 @@ public class ArvoreTabuleiros {
 		
 		while (this.isJogoFinalizado() == false) {
 			
-			if(this.ponteiro.getTabuleiroFilhos().size() == 0){
-				this.ponteiro = this.heuristicaGetParenteMelhor(this.ponteiro.getTabuleiroPai());
-			}else{
-				this.ponteiro = heuristicaGetTabuleiroMelhor(this.ponteiro);
+			this.ponteiro = this.heuristicaGetParenteMelhor(this.ponteiro);
+			
+			if(this.ponteiro.getTabuleiroFilhos().size()> 0){
+				System.out.println("Tem filhos: "+this.ponteiro.getTabuleiroFilhos().size());
 			}
 			
 			this.gerarTabuleirosPossivel(this.ponteiro);
 			
 			i++;
 			
-			System.out.println(i);
+			System.out.println(i+" --- "+this.ponteiro.getIndexProfundidade());
 			
 		}
 		
@@ -183,16 +183,19 @@ public class ArvoreTabuleiros {
 			numeroPecas.add(i);
 		}
 		Collections.shuffle(numeroPecas);
+			
+		/*
+		numeroPecas.add(6);
+		numeroPecas.add(3);
+		numeroPecas.add(5);
+		numeroPecas.add(0);
+		numeroPecas.add(2);
+		numeroPecas.add(8);
+		numeroPecas.add(1);
+		numeroPecas.add(7);
+		numeroPecas.add(4);
+		 */
 		
-//		numeroPecas.add(6);
-//		numeroPecas.add(3);
-//		numeroPecas.add(5);
-//		numeroPecas.add(0);
-//		numeroPecas.add(2);
-//		numeroPecas.add(8);
-//		numeroPecas.add(1);
-//		numeroPecas.add(7);
-//		numeroPecas.add(4);
 		
 		return numeroPecas;
 		
@@ -310,22 +313,21 @@ public class ArvoreTabuleiros {
 		
 	}
 
-	private Tabuleiro heuristicaGetTabuleiroMelhor(Tabuleiro tabuleiro){
-		return tabuleiro.getTabuleiroFilhos().get(0);
-	}
 	private Tabuleiro heuristicaGetParenteMelhor(Tabuleiro tabuleiroPai){
 		
 		ArrayList<Tabuleiro> tabuleiros = tabuleiroPai.getTabuleiroFilhos();
 		
-		tabuleiroPai.incIndexFilhoAtual();
 		
 		int indexAtual = tabuleiroPai.getIndexFilhoAtual();
+		
+		tabuleiroPai.incIndexFilhoAtual();
 
 		if(tabuleiros.size()<=indexAtual){
-			return heuristicaGetParenteMelhor(tabuleiroPai.getTabuleiroPai());
+			System.out.println("Pai");
+			return this.heuristicaGetParenteMelhor(tabuleiroPai.getTabuleiroPai());
 		}
 		
-		return tabuleiros.get(tabuleiroPai.getIndexFilhoAtual());
+		return tabuleiros.get(indexAtual);
 		
 	}
 	

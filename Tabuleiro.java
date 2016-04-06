@@ -13,6 +13,8 @@ public class Tabuleiro {
 	private int quantidadePontos	= -1;
 
 	private int indexFilhoAtual		= 0;
+	
+	private int indexProfundidade	= 0;
 
 	public int getQuantidadePontos() {
 		return quantidadePontos;
@@ -85,6 +87,7 @@ public class Tabuleiro {
 	}
 
 	public void addTabuleiroFilho(Tabuleiro tabuleiro) {
+		tabuleiro.setIndexProfundidade(this.getIndexProfundidade()+1);
 		tabuleiro.setTabuleiroPai(this);
 		this.tabuleiroFilhos.add(tabuleiro);
 	}
@@ -125,5 +128,12 @@ public class Tabuleiro {
 	public void setIndexFilhoAtual(int indexFilhoAtual) {
 		this.indexFilhoAtual = indexFilhoAtual;
 	}
-	
+
+	public int getIndexProfundidade() {
+		return indexProfundidade;
+	}
+
+	public void setIndexProfundidade(int indexProfundidade) {
+		this.indexProfundidade = indexProfundidade;
+	}
 }
